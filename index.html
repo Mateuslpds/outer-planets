@@ -1,0 +1,192 @@
+<head>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<section class="clearfix">
+		<ul class="solarsystem">
+			<li class="sun"><a href="#sun"><span>Sun</span></a></li>
+            <li class="mercury"><a href="#" onclick="findShortestPath('mercury')"><span>Mercury</span></a></li>
+            <li class="venus"><a href="#" onclick="findShortestPath('venus')"><span>Venus</span></a></li>
+            <li class="earth"><a href="#" onclick="findShortestPath('earth')"><span>Earth<span class="moon"> &amp; Moon</span></span></a></li>
+            <li class="mars"><a href="#" onclick="findShortestPath('mars')"><span>Mars</span></a></li>
+            <li class="timber-hearth"><a href="#" onclick="findShortestPath('timber-hearth')"><span>Timber Hearth</span></a></li>
+            <li class="jupiter"><a href="#" onclick="findShortestPath('jupiter')"><span>Jupiter</span></a></li>
+            <li class="saturn"><a href="#" onclick="findShortestPath('saturn')"><span>Saturn &amp; <span class="ring">Ring</span></span></a></li>
+            <li class="giants-deep"><a href="#" onclick="findShortestPath('giants-deep')"><span>Giant's Deep</span></a></li>
+            <li class="uranus"><a href="#" onclick="findShortestPath('uranus')"><span>Uranus</span></a></li>
+            <li class="neptune"><a href="#" onclick="findShortestPath('neptune')"><span>Neptune</span></a></li>
+		</ul>
+		<ul id="descriptions">
+			<li>
+				<h2 id="mercury">Mercury</h2>
+			</li>
+			<li>
+				<h2 id="venus">Venus</h2>
+			</li>
+			<li>
+				<h2 id="earth">Earth</h2>
+			</li>
+			<li>
+				<h2 id="mars">Mars</h2>
+			</li>
+			<li>
+				<h2 id="timber-hearth">Timber Hearth</h2>
+			</li>
+			<li>
+				<h2 id="jupiter">Jupiter</h2>
+			</li>
+			<li>
+				<h2 id="saturn">Saturn</h2>
+			</li>
+			<li>
+				<h2 id="giants-deep">Giant's Deep</h2>
+			</li>
+			<li>
+				<h2 id="uranus">Uranus</h2>
+			</li>
+			<li>
+				<h2 id="neptune">Neptune</h2>
+			</li>
+		</ul>
+	</section>
+	<script>
+		// create a graph class
+		class Graph {
+			// defining vertex array and adjacent list
+			constructor(noOfVertices) {
+				this.noOfVertices = noOfVertices;
+				this.AdjList = new Map();
+			}
+
+			// add vertex to the graph
+			addVertex(v) {
+				// initialize the adjacent list with a null array
+				this.AdjList.set(v, []);
+			}
+
+			addEdge(v, w, weight) {
+				// get the list for vertex v and put the vertex w denoting edge between v and w
+				this.AdjList.get(v).push({ node: w, weight: weight });
+				this.AdjList.get(w).push({ node: v, weight: weight });
+			}
+
+			// Prints the vertex and adjacency list
+			printGraph() {
+				for (let [vertex, edges] of this.AdjList) {
+					let edgeString = edges.map(edge => `${edge.node} (${edge.weight})`).join(', ');
+					console.log(`${vertex} -> ${edgeString}`);
+				}
+			}
+		}
+
+		// Using the above implemented graph class
+		var g = new Graph(10);
+		var vertices = ['mercury', 'venus', 'earth', 'mars', 'timber-hearth', 'jupiter', 'saturn', 'giants-deep', 'uranus', 'neptune'];
+
+		// adding vertices
+		for (var i = 0; i < vertices.length; i++) {
+			g.addVertex(vertices[i]);
+		}
+
+		// adding edges
+		g.addEdge('mercury', 'venus', 4);
+		g.addEdge('mercury', 'earth', 8);
+		g.addEdge('mercury', 'mars', 7);
+		g.addEdge('mercury', 'giants-deep', 9);
+		g.addEdge('venus', 'earth', 5);
+		g.addEdge('venus', 'mars', 10);
+		g.addEdge('venus', 'timber-hearth', 8);
+		g.addEdge('venus', 'saturn', 7);
+		g.addEdge('venus', 'uranus', 10);
+		g.addEdge('earth', 'mars', 7);
+		g.addEdge('earth', 'timber-hearth', 3);
+		g.addEdge('earth', 'jupiter', 7);
+		g.addEdge('earth', 'saturn', 7);
+		g.addEdge('mars', 'timber-hearth', 9);
+		g.addEdge('mars', 'jupiter', 5);
+		g.addEdge('mars', 'giants-deep', 6);
+		g.addEdge('timber-hearth', 'jupiter', 7);
+		g.addEdge('timber-hearth', 'saturn', 7);
+		g.addEdge('jupiter', 'giants-deep', 10);
+		g.addEdge('giants-deep', 'neptune', 10);
+		g.addEdge('uranus', 'neptune', 10);
+
+		// prints all vertex and its adjacency list
+		g.printGraph();
+
+		// Function to find the shortest path from Earth to the clicked planet
+		function findShortestPath(destination) {
+			let source = 'mercury'; // Earth is the starting point
+			let path = dijkstra(g, source, destination);
+			
+			// Print the path
+			console.log(`Shortest path from ${source} to ${destination}: ${path.join(' -> ')}`);
+		}
+
+		// Dijkstra's algorithm to find the shortest path in a weighted graph
+		function dijkstra(graph, start, end) {
+			let dist = {};
+			let previous = {};
+			let pq = new PriorityQueue();
+
+			for (let vertex of graph.AdjList.keys()) {
+				dist[vertex] = Infinity;
+				previous[vertex] = null;
+			}
+
+			dist[start] = 0;
+			pq.enqueue(start, 0);
+
+			while (!pq.isEmpty()) {
+				let currentVertex = pq.dequeue().element;
+
+				for (let neighbor of graph.AdjList.get(currentVertex)) {
+					let alt = dist[currentVertex] + neighbor.weight;
+					if (alt < dist[neighbor.node]) {
+						dist[neighbor.node] = alt;
+						previous[neighbor.node] = currentVertex;
+						pq.enqueue(neighbor.node, alt);
+					}
+				}
+			}
+
+			let path = [];
+			for (let vertex = end; vertex !== null; vertex = previous[vertex]) {
+				path.unshift(vertex);
+			}
+
+			return path;
+		}
+
+		// Priority Queue implementation for Dijkstra's algorithm
+		class PriorityQueue {
+			constructor() {
+				this.items = [];
+			}
+
+			enqueue(element, priority) {
+				let queueElement = { element, priority };
+				let added = false;
+				for (let i = 0; i < this.items.length; i++) {
+					if (queueElement.priority < this.items[i].priority) {
+						this.items.splice(i, 0, queueElement);
+						added = true;
+						break;
+					}
+				}
+				if (!added) {
+					this.items.push(queueElement);
+				}
+			}
+
+			dequeue() {
+				return this.items.shift();
+			}
+
+			isEmpty() {
+				return this.items.length === 0;
+			}
+		}
+	</script>
+</body>
